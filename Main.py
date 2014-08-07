@@ -1,27 +1,29 @@
 '''
 Program that can scrape though a series of text documents for keywords drawn from
-an aditional document, returning the normalised tallys of each keyword in a csv file
-that can be used to make graphs.
-
--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
+an aditional document, returning the normalised tallys of each keyword in a csv file.
 '''
+
 import csv
-import numpy as np
+import string
+
+NewsFolder = '/home/john/Documents/Grive/Groups Project/News texts'
+ListFolder = '/home/john/Documents/Grive/Groups Project/Lists'
+ResultsFolder = '/home/john/Documents/Grive/Groups Project/Results'
+
 
 def normal(value, factor):
     c = 100000
-    n =0
+    Ignore = False # Returns unnormalized variables
     '''
     Takes in a value, the factor you wish to normalise it by, and a constant by which to multiply it.
     For example the term count (value) and the total lengh of the text document (value) with a constant
     of 100,000 returns a value of 1 for each time in 100,000 the word is used.
     '''
-    if n == 1:
+    if Ignore == False:
         return round(((float(value)/factor)*c), 2)
-    elif n == 0: #Set the value of n as 0 to return unnormalised variables.
+    else: 
         return value
-    else:
-        return ValueError
+
 
 
 def textChecker(words, news):
@@ -30,13 +32,13 @@ def textChecker(words, news):
     and returns a list of normalised values corrisponding to the number of times the word appeared.
     '''
     results = []
-    for t in words:
+    for term in words:
         termcount = 0
-        if type(t) == list: #Lists within lists are collections of words that we feel should be treated as the same word
-            results.append(normal(sum(textChecker(t, news)), len(news)))
+        if type(term) == list: #Lists within lists are collections of words that we feel should be treated as the same word
+            results.append(normal(sum(textChecker(term, news)), len(news)))
         else:
-            for i, line in enumerate(news):
-                if t in line.lower(): #All words treated as lowercase
+            for word in news:
+                if term == word:
                     termcount += 1
             if termcount == 0:
                 results.append(0)
@@ -50,10 +52,10 @@ def newsItor(words, d1, d2):
     it returns one list of values per year, sorted into a metalist.
     '''
     metaResults = []
-    for n in range(d1,d2+1): #Adds one to the stop value so that we may imput the final year we want results from
-        newsFile = open(('C:\Users\JKiely\Google Drive\Groups Project\News texts\\news_' + str(n) + '.TXT'), 'r') #Iterates though appropreatly named files
-        newsFile = newsFile.readlines()
-        metaResults.append(textChecker(words, newsFile)) #Adds each results list to the meta list
+    for n in range(d1,d2+1):
+        newsFile = open((str(NewsFolder) + '/news_' + str(n) + '.TXT'), 'r').read() #Iterates though appropreatly named files
+        newsFile = [word.strip(string.punctuation) for word in newsFile.lower().split()]
+        metaResults.append(textChecker(words, newsFile))
     return metaResults
                     
 def listMaker(listname):
@@ -62,18 +64,16 @@ def listMaker(listname):
     Groups of words that are to be treated as one word should be put on the same line seperated by commas, comments may be added to the document
     using the # key.
     '''
-    listDoc = open(('C:\Users\JKiely\Google Drive\Groups Project\\'+ listname +'.TXT'), 'r') #Current location of lists
+    listDoc = open((str(ListFolder) + '/'+ listname +'.txt'), 'r') 
     listDoc = listDoc.readlines()
     newList = []
     for i, line in enumerate(listDoc):
-        if line == '\n': #Ignores blank lines
+        if line == '\n':
             None
-        elif line[0] == '#': #Ignores comments
+        elif line[0] == '#':
             None
-        elif len(line.split(',')) > 1: #Creates sublist out of comma seperated variables
-            templist = []
-            for j in line.split(','):
-                templist.append(j.lower().rstrip()) #Converted to lowercase
+        elif len(line.split(',')) > 1: #Creates sublist out of comma seperated keywords
+            templist = [j.lower().rstrip() for j in line.split(',')]
             newList.append(templist)
         else:
             newList.append(line.lower().rstrip())
@@ -83,25 +83,24 @@ def writer(results, destination):
     '''
     Takes a list of results and writes them to a text file (destination) in the results folder, also returns the results to the terminal
     '''
-    resultsDoc = open(('C:\Users\JKiely\Google Drive\Groups Project\Results\\'+ destination +'.TXT'), 'w') #Can edit an existing document or create a new one
+    resultsDoc = open((str(ResultsFolder) + '/'+ destination +'.txt'), 'w')
     writer = csv.writer(resultsDoc)
     for item in results:
         writer.writerow(item)
     resultsDoc.close()
     return results
 
-def scraper(n, words, start, end):
+def scraper(words, start, end, Transpose=False):
     '''
     Brings together all of the prevous functions.
     Takes the word list and the start and end dates and the textchecker you wish to use, 
     returns the results list from checker and creats a results document using writer.
     '''
-    if n == 0:
+    if Transpose == False:
         return writer(newsItor((listMaker(words)), start, end), ('Results for '+ words + ' ' + str(start) + '-' + str(end)))
-    elif n == 1:
-        return writer(np.transpose(newsItor((listMaker(words)), start, end)), ('Results for '+ words + ' ' + str(start) + '-' + str(end)))
     else:
-        return ValueError
+        from numpy import transpose
+        return writer(transpose(newsItor((listMaker(words)), start, end)), ('Results for '+ words + ' ' + str(start) + '-' + str(end)))
 
 
-print scraper(0, 'test', 1993, 2013)
+print scraper('test', 1993, 2013)
