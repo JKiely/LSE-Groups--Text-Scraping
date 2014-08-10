@@ -1,8 +1,3 @@
-'''
-Program that can scrape though a series of text documents for keywords drawn from
-an aditional document, returning the normalised tallys of each keyword in a csv file.
-'''
-
 import csv
 import string
 
@@ -11,12 +6,10 @@ ListFolder = '/home/john/Documents/Grive/Groups Project/Lists'
 ResultsFolder = '/home/john/Documents/Grive/Groups Project/Results'
 
 
-def normal(value, factor):
-    c = 100000
-    Ignore = False # Returns unnormalized variables
+def normal(value, factor, Ignore = False, c = 100000):
     '''
     Takes in a value, the factor you wish to normalise it by, and a constant by which to multiply it.
-    For example the term count (value) and the total lengh of the text document (value) with a constant
+    For example the term count (value) and the total length of the text document (value) with a constant
     of 100,000 returns a value of 1 for each time in 100,000 the word is used.
     '''
     if Ignore == False:
@@ -24,12 +17,10 @@ def normal(value, factor):
     else: 
         return value
 
-
-
 def textChecker(words, news):
     '''
     textChecker takes a list of keywords (words) and a collection of news articles in a single .txt file (news)
-    and returns a list of normalised values corrisponding to the number of times the word appeared.
+    and returns a list of normalised values corresponding to the number of times the word appeared.
     '''
     results = []
     for term in words:
@@ -48,7 +39,7 @@ def textChecker(words, news):
 
 def newsItor(words, d1, d2):
     '''
-    Takes in a list of words you wish to serch and the range of years you wish to search (ending on the final one),
+    Takes in a list of words you wish to search and the range of years you wish to search (ending on the final one),
     it returns one list of values per year, sorted into a metalist.
     '''
     metaResults = []
@@ -61,7 +52,7 @@ def newsItor(words, d1, d2):
 def listMaker(listname):
     '''
     Takes the name of a txt document in the project folder with keywords, each on a new line, and returns a list of said keywords.
-    Groups of words that are to be treated as one word should be put on the same line seperated by commas, comments may be added to the document
+    Groups of words that are to be treated as one word should be put on the same line separated by commas, comments may be added to the document
     using the # key.
     '''
     listDoc = open((str(ListFolder) + '/'+ listname +'.txt'), 'r') 
@@ -92,9 +83,9 @@ def writer(results, destination):
 
 def scraper(words, start, end, Transpose=False):
     '''
-    Brings together all of the prevous functions.
+    Brings together all of the previous functions.
     Takes the word list and the start and end dates and the textchecker you wish to use, 
-    returns the results list from checker and creats a results document using writer.
+    returns the results list from checker and creates a results document using writer.
     '''
     if Transpose == False:
         return writer(newsItor((listMaker(words)), start, end), ('Results for '+ words + ' ' + str(start) + '-' + str(end)))
@@ -102,5 +93,3 @@ def scraper(words, start, end, Transpose=False):
         from numpy import transpose
         return writer(transpose(newsItor((listMaker(words)), start, end)), ('Results for '+ words + ' ' + str(start) + '-' + str(end)))
 
-
-print scraper('test', 1993, 2013)
